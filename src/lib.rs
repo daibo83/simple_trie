@@ -45,7 +45,7 @@ impl Trie {
 	}
     pub fn insert(&mut self, string: &str, val: Option<u32>) { //insert 
         let mut node_pos: usize = 0;
-		let mut temp_node_pos: usize = 0;
+		let mut temp_node_pos: usize;
 		for c in string.as_bytes(){
 			temp_node_pos = self.transition(node_pos, c);
 			if temp_node_pos == 4294967295{
@@ -59,7 +59,7 @@ impl Trie {
     }
     pub fn insert_synonym(&mut self, string: &str, synonyms: Vec<String>) { //insert 
         let mut node_pos: usize = 0;
-		let mut temp_node_pos: usize = 0;
+		let mut temp_node_pos: usize;
 		for c in string.as_bytes(){
 			temp_node_pos = self.transition(node_pos, c);
 			if temp_node_pos == 4294967295{
@@ -258,7 +258,7 @@ impl Trie {
 	
 	fn split_candidate(&self, candidate: (String, usize, usize, u32)) -> Vec<Token>{
 		match self.search(&candidate.0){
-			Some(val)=>
+			Some(_val)=>
 			{return vec![Token{value: candidate.0, synonyms: None}];}
 			None => {
 				let splits: Vec<Token> = candidate.0.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: None}).collect();
