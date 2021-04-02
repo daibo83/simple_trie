@@ -1,6 +1,6 @@
 [package]
 name = "simple_trie"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["daibo83 <daibo031983@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"

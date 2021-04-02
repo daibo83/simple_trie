@@ -137,6 +137,17 @@ impl Trie {
 	}
 	/// function that gets the highest scoring (sum of values) combination of tokens
 	pub fn get_all_tokens(&self, input: &str)-> Vec<Token>{
+		if !input.contains(' '){return vec![Token {value: input.to_string(), synonyms: match self.search(input){
+			None => None,
+			Some(val) => {
+				if val >= 4000000000{
+					Some(self.synonym_dict[val as usize - 4000000000].clone())
+				}
+				else{None}
+			}
+		}
+		}
+		]}
 		let mut candidates: Vec<(String, usize, usize, u32)> = Vec::new();
 
 		let mut offsets: Vec<usize> = input.match_indices(' ').map(|s| s.0+1).collect();
@@ -183,7 +194,8 @@ impl Trie {
 		let mut tokens_to_remove: Vec<usize> = Vec::new();
 		let windows_iter = candidates.windows(3);
 		for (i, window) in windows_iter.enumerate(){
-			if window[1].3 < window[0].3 + window[2].3 && window[0].2 > window[1].1 && window[1].2 > window[2].1 && !tokens_to_remove.contains(&i){
+			if window[1].3 < window[0].3 + window[2].3 && window[0].2 > window[1].1 && window[1].2 > window[2].1 {
+				// println!("{} {}", i, tokens_to_remove.contains(&i));
 				tokens_to_remove.push(i+1);
 			}
 			else{
@@ -196,6 +208,7 @@ impl Trie {
 			}
 		}
 		tokens_to_remove.dedup();
+		// println!("{:?}", tokens_to_remove);
 		// println!("candidates: {:?}	{:?}", candidates, tokens_to_remove);
 		for index in tokens_to_remove.iter().rev(){
 			candidates.remove(*index);
