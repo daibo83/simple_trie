@@ -171,7 +171,14 @@ impl Trie {
 			// println!("{:?}", to_add);
 			candidates.append(&mut to_add);
 			candidates.sort_by_key(|a| a.1);
-			return candidates.iter().map(|s| Token{value:s.0.to_owned(), synonyms: None}).collect();
+			return candidates.iter().map(|s| {
+				if s.3 >= 4000000000{
+					Token{value:s.0.to_owned(), synonyms: Some(self.synonym_dict[s.3 as usize - 4000000000].clone())}
+				}
+				else{
+					Token{value:s.0.to_owned(), synonyms: None}
+				}
+			}).collect();
 		}
 		let mut tokens_to_remove: Vec<usize> = Vec::new();
 		let windows_iter = candidates.windows(3);
