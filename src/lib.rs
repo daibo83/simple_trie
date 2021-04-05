@@ -1,7 +1,7 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token{
 	pub value: String,
-	pub synonyms: Option<Vec<String>>
+	pub synonyms: Vec<String>
 }
 
 pub struct Node {
@@ -138,12 +138,12 @@ impl Trie {
 	/// function that gets the highest scoring (sum of values) combination of tokens
 	pub fn get_all_tokens(&self, input: &str)-> Vec<Token>{
 		if !input.contains(' '){return vec![Token {value: input.to_string(), synonyms: match self.search(input){
-			None => None,
+			None => Vec::new(),
 			Some(val) => {
 				if val >= 4000000000{
-					Some(self.synonym_dict[val as usize - 4000000000].clone())
+					self.synonym_dict[val as usize - 4000000000].clone()
 				}
-				else{None}
+				else{Vec::new()}
 			}
 		}
 		}
@@ -184,10 +184,10 @@ impl Trie {
 			candidates.sort_by_key(|a| a.1);
 			return candidates.iter().map(|s| {
 				if s.3 >= 4000000000{
-					Token{value:s.0.to_owned(), synonyms: Some(self.synonym_dict[s.3 as usize - 4000000000].clone())}
+					Token{value:s.0.to_owned(), synonyms: self.synonym_dict[s.3 as usize - 4000000000].clone()}
 				}
 				else{
-					Token{value:s.0.to_owned(), synonyms: None}
+					Token{value:s.0.to_owned(), synonyms: Vec::new()}
 				}
 			}).collect();
 		}
@@ -246,10 +246,10 @@ impl Trie {
 			}
 			else{
 				if candidate.3 >= 4000000000{
-					result.push(Token{value: candidate.0, synonyms: Some(self.synonym_dict[candidate.3 as usize -4000000000].clone())})
+					result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone()})
 				}
 				else{
-					result.push(Token{value: candidate.0, synonyms: None});
+					result.push(Token{value: candidate.0, synonyms: Vec::new()});
 				}
 			}
 		}
@@ -260,14 +260,14 @@ impl Trie {
 		match self.search(&candidate.0){
 			Some(val)=> {
 					if val >= 4000000000 {
-						return vec![Token{value: candidate.0, synonyms: Some(self.synonym_dict[val as usize -4000000000].clone())}];
+						return vec![Token{value: candidate.0, synonyms: self.synonym_dict[val as usize -4000000000].clone()}];
 					}
 					else{
-						return vec![Token{value: candidate.0, synonyms: None}];
+						return vec![Token{value: candidate.0, synonyms: Vec::new()}];
 					}
 				}
 			None => {
-				let splits: Vec<Token> = candidate.0.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: None}).collect();
+				let splits: Vec<Token> = candidate.0.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: Vec::new()}).collect();
 				return splits;
 			}
 		}
