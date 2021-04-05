@@ -258,8 +258,14 @@ impl Trie {
 	
 	fn split_candidate(&self, candidate: (String, usize, usize, u32)) -> Vec<Token>{
 		match self.search(&candidate.0){
-			Some(_val)=>
-			{return vec![Token{value: candidate.0, synonyms: None}];}
+			Some(val)=> {
+					if val >= 4000000000 {
+						return vec![Token{value: candidate.0, synonyms: Some(self.synonym_dict[val as usize -4000000000].clone())}];
+					}
+					else{
+						return vec![Token{value: candidate.0, synonyms: None}];
+					}
+				}
 			None => {
 				let splits: Vec<Token> = candidate.0.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: None}).collect();
 				return splits;
