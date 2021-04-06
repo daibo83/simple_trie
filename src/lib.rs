@@ -55,7 +55,13 @@ impl Trie {
 			}
 			else {node_pos = temp_node_pos;}
 		}
-		self.nodes[node_pos].val = val;
+		if val == Some(4294967295){
+			// println!("{:?}", string);
+			self.nodes[node_pos].val = Some(1);
+		}
+		else{
+			self.nodes[node_pos].val = val;
+		}
     }
     pub fn insert_synonym(&mut self, string: &str, synonyms: Vec<String>) { //insert 
         let mut node_pos: usize = 0;
@@ -239,6 +245,7 @@ impl Trie {
 		candidates.append(&mut to_add);
 		candidates.sort_by_key(|a| a.1);
 		let mut result: Vec<Token> = Vec::new();
+		println!("{:?}", candidates);
 		for candidate in candidates{
 			if candidate.3 == 0{
 				let mut splits = self.split_candidate(candidate);
@@ -246,6 +253,7 @@ impl Trie {
 			}
 			else{
 				if candidate.3 >= 4000000000{
+					
 					result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone()})
 				}
 				else{
