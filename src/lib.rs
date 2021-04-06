@@ -63,7 +63,7 @@ impl Trie {
 			self.nodes[node_pos].val = val;
 		}
     }
-    pub fn insert_synonym(&mut self, string: &str, synonyms: Vec<String>) { //insert 
+    pub fn insert_synonym(&mut self, string: &str, synonyms: Vec<String>) { //insert a string with a vector of its synonyms as strings
         let mut node_pos: usize = 0;
 		let mut temp_node_pos: usize;
 		for c in string.as_bytes(){
@@ -86,6 +86,16 @@ impl Trie {
 		}
 		return self.nodes[node_pos].val;
 	}
+	
+	pub fn is_prefix(&self, string: &str) -> bool {//returns true if input string is prefix of a key in the trie
+		let mut node_pos: usize = 0;
+		for c in string.as_bytes(){
+			node_pos = self.transition(node_pos, c);
+			if node_pos == 4294967295 {return false;}
+		}
+		return true;		
+	}
+	
 	pub fn longest_common_prefix_search(&self, string: &str) -> Option<(u32, usize)>{ //returns longest prefix of the input string
 		let mut node_pos: usize = 0;
 		let mut value: Option<u32> = None;
@@ -169,8 +179,11 @@ impl Trie {
 		// println!("{:?}", candidates);
 		let mut offset: usize = 0;
 		let mut to_add: Vec<(String, usize, usize, u32)> = Vec::new();
-		if candidates.len() == 1 || candidates.len() == 0{
-
+		if candidates.len() == 0 {
+			return self.split_candidate((input.to_string(), 0, 0 ,0));
+		}
+		if candidates.len() == 1{
+			println!("{:?}", candidates);
 			for candidate in &candidates{
 				if &input[offset..candidate.1] != "" && &input[offset..candidate.1] != " "{
 					if offset == 0{
@@ -246,6 +259,8 @@ impl Trie {
 		candidates.sort_by_key(|a| a.1);
 		let mut result: Vec<Token> = Vec::new();
 		// println!("{:?}", candidates);
+		let mut i = 0;
+		let candidates_len = candidates.len().clone();
 		for candidate in candidates{
 			if candidate.3 == 0{
 				let mut splits = self.split_candidate(candidate);
@@ -260,6 +275,7 @@ impl Trie {
 					result.push(Token{value: candidate.0, synonyms: Vec::new()});
 				}
 			}
+			i = i+1;
 		}
 		return result;
 	}
