@@ -245,7 +245,7 @@ impl Trie {
 		candidates.append(&mut to_add);
 		candidates.sort_by_key(|a| a.1);
 		let mut result: Vec<Token> = Vec::new();
-		println!("{:?}", candidates);
+		// println!("{:?}", candidates);
 		for candidate in candidates{
 			if candidate.3 == 0{
 				let mut splits = self.split_candidate(candidate);
