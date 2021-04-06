@@ -87,25 +87,19 @@ impl Trie {
 		return self.nodes[node_pos].val;
 	}
 	
-	pub fn is_prefix(&self, string: &str) -> bool {//returns true if input string is prefix of a key in the trie
-		let mut node_pos: usize = 0;
-		for c in string.as_bytes(){
-			node_pos = self.transition(node_pos, c);
-			if node_pos == 4294967295 {return false;}
-		}
-		return true;		
-	}
-	
-	pub fn longest_common_prefix_search(&self, string: &str) -> Option<(u32, usize)>{ //returns longest prefix of the input string
+	pub fn longest_common_prefix_search(&self, string: &str) -> Option<(u32, usize)>{ //returns longest key from the beginning of the input string, returns a prefix for a key in the trie if no complete key can be found
 		let mut node_pos: usize = 0;
 		let mut value: Option<u32> = None;
 		let mut offset: usize = 0;
 		for i in 0..string.len(){
 			node_pos = self.transition(node_pos, &string.as_bytes()[i]);
-			if node_pos != 4294967295 && self.nodes[node_pos].val != None {
-				if i == string.len()-1{
+			if node_pos != 4294967295 {
+				if self.nodes[node_pos].val != None{
 					value = self.nodes[node_pos].val;
 					offset = i;
+				}				
+				if i == string.len()-1{
+					return Some((value.unwrap_or(1), i));
 				}
 				else {
 					if string.as_bytes()[i+1] == ' ' as u8{
@@ -183,7 +177,6 @@ impl Trie {
 			return self.split_candidate((input.to_string(), 0, 0 ,0));
 		}
 		if candidates.len() == 1{
-			println!("{:?}", candidates);
 			for candidate in &candidates{
 				if &input[offset..candidate.1] != "" && &input[offset..candidate.1] != " "{
 					if offset == 0{
@@ -201,14 +194,24 @@ impl Trie {
 			// println!("{:?}", to_add);
 			candidates.append(&mut to_add);
 			candidates.sort_by_key(|a| a.1);
-			return candidates.iter().map(|s| {
-				if s.3 >= 4000000000{
-					Token{value:s.0.to_owned(), synonyms: self.synonym_dict[s.3 as usize - 4000000000].clone()}
+			let mut result: Vec<Token> = Vec::new();
+			for candidate in candidates{
+				if candidate.3 == 0{
+					let mut splits = self.split_candidate(candidate);
+					result.append(&mut splits);
 				}
 				else{
-					Token{value:s.0.to_owned(), synonyms: Vec::new()}
+					if candidate.3 >= 4000000000{
+						
+						result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone()})
+					}
+					else{
+						result.push(Token{value: candidate.0, synonyms: Vec::new()});
+					}
 				}
-			}).collect();
+			}
+			return result;
+			
 		}
 		let mut tokens_to_remove: Vec<usize> = Vec::new();
 		let windows_iter = candidates.windows(3);
@@ -259,8 +262,6 @@ impl Trie {
 		candidates.sort_by_key(|a| a.1);
 		let mut result: Vec<Token> = Vec::new();
 		// println!("{:?}", candidates);
-		let mut i = 0;
-		let candidates_len = candidates.len().clone();
 		for candidate in candidates{
 			if candidate.3 == 0{
 				let mut splits = self.split_candidate(candidate);
@@ -275,7 +276,6 @@ impl Trie {
 					result.push(Token{value: candidate.0, synonyms: Vec::new()});
 				}
 			}
-			i = i+1;
 		}
 		return result;
 	}
