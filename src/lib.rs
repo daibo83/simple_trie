@@ -240,6 +240,9 @@ impl Trie {
 					if window[1].3 > window[0].3 && window[0].2 >= window[1].1{
 						tokens_to_remove.push(i);
 					}
+					if window[1].3 >= window[2].3 && window[1].2 >= window[2].1{
+						tokens_to_remove.push(i+2);
+					}
 				}
 			}
 			tokens_to_remove.dedup();
@@ -258,6 +261,7 @@ impl Trie {
 		}
 		// println!("candidates: {:?}", candidates);
 		for candidate in &candidates{
+			// println!("{}, {}", offset, candidate.1);
 			if &input[offset..candidate.1] != "" && &input[offset..candidate.1] != " "{
 				if offset == 0{
 					to_add.push((input[offset..candidate.1].to_string(), offset, candidate.1-2, 0))
@@ -295,6 +299,18 @@ impl Trie {
 	}
 	
 	fn split_candidate(&self, candidate: (String, usize, usize, u32)) -> Vec<Token>{//split get_all_token candidates into valid tokens
+		
+		// let ngo_hem: Vec<String> = vec!["hem".to_string(), "ngo".to_string(), "ngach".to_string()];
+						// println!("{}", candidate.0);
+		// for i in 0..3{
+			// if candidate.0.starts_with(&ngo_hem[i]) && (48..=57).contains(&(candidate.0.as_bytes()[candidate.0.find(' ').unwrap_or(0)+1] as u8)){
+
+				// return vec![Token{value: candidate.0.clone(), synonyms: vec![candidate.0.split_whitespace().last().unwrap().to_string()]}];
+			// }
+			// else {
+				// continue;
+			// }
+		// }
 		match self.search(&candidate.0){
 			Some(val)=> {
 					if val >= 4000000000 {
