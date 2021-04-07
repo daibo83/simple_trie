@@ -215,7 +215,7 @@ impl Trie {
 			
 		}
 		if candidates.len() == 2{
-			if candidates[0].3 > candidates[1].3 && candidates[0].2 >= candidates[1].1{
+			if candidates[0].3 >= candidates[1].3 && candidates[0].2 >= candidates[1].1{
 				candidates.remove(1);
 			}
 			else{
