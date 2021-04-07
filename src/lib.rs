@@ -93,20 +93,21 @@ impl Trie {
 		let mut offset: usize = 0;
 		for i in 0..string.len(){
 			node_pos = self.transition(node_pos, &string.as_bytes()[i]);
-			if node_pos != 4294967295 {
-				if self.nodes[node_pos].val != None{
-					value = self.nodes[node_pos].val;
-					offset = i;
-				}				
-				if i == string.len()-1{
-					return Some((value.unwrap_or(1), i));
-				}
-				else {
+			// println!("{}, {:?}", node_pos, self.nodes[node_pos].val);
+			if node_pos != 4294967295 && i < string.len()-1{
+				// if self.nodes[node_pos].val != None{
+					// value = self.nodes[node_pos].val;
+				// }				
+
+				
 					if string.as_bytes()[i+1] == ' ' as u8{
 						value = self.nodes[node_pos].val;
 						offset = i;
 					}
-				}
+				
+			}
+			if i == string.len()-1 && node_pos != 4294967295{
+				return Some((self.nodes[node_pos].val.unwrap_or(1), i));
 			}
 			if node_pos == 4294967295 {
 				match value {
@@ -213,43 +214,56 @@ impl Trie {
 			return result;
 			
 		}
-		let mut tokens_to_remove: Vec<usize> = Vec::new();
-		let windows_iter = candidates.windows(3);
-		for (i, window) in windows_iter.enumerate(){
-			if window[1].3 < window[0].3 + window[2].3 && window[0].2 > window[1].1 && window[1].2 > window[2].1 {
-				// println!("{} {}", i, tokens_to_remove.contains(&i));
-				tokens_to_remove.push(i+1);
+		if candidates.len() == 2{
+			if candidates[0].3 > candidates[1].3 && candidates[0].2 >= candidates[1].1{
+				candidates.remove(1);
 			}
 			else{
-				if window[0].3 >= window[1].3 && window[0].2 > window[1].1{
+				if candidates[0].3 < candidates[1].3 && candidates[0].2 >= candidates[1].1{
+					candidates.remove(0);
+				}
+			}
+		}
+		else{
+			let mut tokens_to_remove: Vec<usize> = Vec::new();
+			let windows_iter = candidates.windows(3);
+			
+			for (i, window) in windows_iter.enumerate(){
+				if window[1].3 < window[0].3 + window[2].3 && window[0].2 >= window[1].1 && window[1].2 >= window[2].1 {
+					// println!("{} {}", i, tokens_to_remove.contains(&i));
 					tokens_to_remove.push(i+1);
 				}
-				if window[1].3 > window[0].3 && window[0].2 > window[1].1{
-					tokens_to_remove.push(i);
+				else{
+					if window[0].3 >= window[1].3 && window[0].2 >= window[1].1{
+						tokens_to_remove.push(i+1);
+					}
+					if window[1].3 > window[0].3 && window[0].2 >= window[1].1{
+						tokens_to_remove.push(i);
+					}
+				}
+			}
+			tokens_to_remove.dedup();
+			// println!("{:?}", tokens_to_remove);
+			for index in tokens_to_remove.iter().rev(){
+				candidates.remove(*index);
+			}
+			if candidates[candidates.len()-1].1 < candidates[candidates.len()-2].2{
+				if candidates[candidates.len()-2].3 >= candidates[candidates.len()-1].3{
+					candidates.remove(candidates.len()-1);
+				}
+				else{
+					candidates.remove(candidates.len()-2);
 				}
 			}
 		}
-		tokens_to_remove.dedup();
-		// println!("{:?}", tokens_to_remove);
-		// println!("candidates: {:?}	{:?}", candidates, tokens_to_remove);
-		for index in tokens_to_remove.iter().rev(){
-			candidates.remove(*index);
-		}
-		if candidates[candidates.len()-1].1 < candidates[candidates.len()-2].2{
-			if candidates[candidates.len()-2].3 >= candidates[candidates.len()-1].3{
-				candidates.remove(candidates.len()-1);
-			}
-			else{
-				candidates.remove(candidates.len()-2);
-			}
-		}
+		// println!("candidates: {:?}", candidates);
 		for candidate in &candidates{
 			if &input[offset..candidate.1] != "" && &input[offset..candidate.1] != " "{
 				if offset == 0{
-					to_add.push((input[offset..candidate.1-1].to_string(), offset, candidate.1-2, 0))
+					to_add.push((input[offset..candidate.1].to_string(), offset, candidate.1-2, 0))
 				}
 				else{
-					to_add.push((input[offset+1..candidate.1-1].to_string(), offset+1, candidate.1-2, 0))
+					to_add.push((input[offset..candidate.1].to_string(), offset+1, candidate.1-2, 0))
 				}
 			}
 			offset = candidate.2+1;
@@ -261,7 +275,7 @@ impl Trie {
 		candidates.append(&mut to_add);
 		candidates.sort_by_key(|a| a.1);
 		let mut result: Vec<Token> = Vec::new();
-		// println!("{:?}", candidates);
+
 		for candidate in candidates{
 			if candidate.3 == 0{
 				let mut splits = self.split_candidate(candidate);
@@ -280,7 +294,7 @@ impl Trie {
 		return result;
 	}
 	
-	fn split_candidate(&self, candidate: (String, usize, usize, u32)) -> Vec<Token>{
+	fn split_candidate(&self, candidate: (String, usize, usize, u32)) -> Vec<Token>{//split get_all_token candidates into valid tokens
 		match self.search(&candidate.0){
 			Some(val)=> {
 					if val >= 4000000000 {
