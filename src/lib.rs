@@ -21,13 +21,13 @@ pub struct Trie {
 }
 fn char_2_index(c: u8) -> usize{ // map characters of input string to an usize in range 0..37
 	let index: usize = match c{
-		0..=31 => panic!("input contains non alphanumeric characters"),
+		0..=31 => panic!("{} contains non alphanumeric characters", c as char),
 		32 => 0,
-		33..=47 => panic!("input contains non alphanumeric characters"),
+		33..=47 => panic!("{} contains non alphanumeric characters", c as char),
 		48..=57 => c as usize - 47,
-		58..=96 => panic!("input contains non alphanumeric characters"),
+		58..=96 => panic!("{} contains non alphanumeric characters", c as char),
 		97..=122 => c as usize - 86,
-		123..=255 => panic!("input contains non alphanumeric characters"),
+		123..=255 => panic!("{} contains non alphanumeric characters", c as char),
 	};
 	return index;
 }
@@ -224,7 +224,7 @@ impl Trie {
 				}
 			}
 		}
-		else{
+		if candidates.len()>=3{
 			let mut tokens_to_remove: Vec<usize> = Vec::new();
 			let windows_iter = candidates.windows(3);
 			
@@ -250,14 +250,14 @@ impl Trie {
 			for index in tokens_to_remove.iter().rev(){
 				candidates.remove(*index);
 			}
-			if candidates[candidates.len()-1].1 < candidates[candidates.len()-2].2{
-				if candidates[candidates.len()-2].3 >= candidates[candidates.len()-1].3{
-					candidates.remove(candidates.len()-1);
-				}
-				else{
-					candidates.remove(candidates.len()-2);
-				}
-			}
+			// if candidates[candidates.len()-1].1 < candidates[candidates.len()-2].2{
+				// if candidates[candidates.len()-2].3 >= candidates[candidates.len()-1].3{
+					// candidates.remove(candidates.len()-1);
+				// }
+				// else{
+					// candidates.remove(candidates.len()-2);
+				// }
+			// }
 		}
 		// println!("candidates: {:?}", candidates);
 		for candidate in &candidates{
