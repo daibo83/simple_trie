@@ -250,14 +250,16 @@ impl Trie {
 			for index in tokens_to_remove.iter().rev(){
 				candidates.remove(*index);
 			}
-			// if candidates[candidates.len()-1].1 < candidates[candidates.len()-2].2{
-				// if candidates[candidates.len()-2].3 >= candidates[candidates.len()-1].3{
-					// candidates.remove(candidates.len()-1);
-				// }
-				// else{
-					// candidates.remove(candidates.len()-2);
-				// }
-			// }
+			if candidates.len()>=2{
+				if candidates[candidates.len()-1].1 < candidates[candidates.len()-2].2{
+					if candidates[candidates.len()-2].3 >= candidates[candidates.len()-1].3{
+						candidates.remove(candidates.len()-1);
+					}
+					else{
+						candidates.remove(candidates.len()-2);
+					}
+				}
+			}
 		}
 		// println!("candidates: {:?}", candidates);
 		for candidate in &candidates{
