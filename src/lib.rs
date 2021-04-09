@@ -230,7 +230,7 @@ impl Trie {
 			let windows_iter = candidates.windows(3);
 			
 			for (i, window) in windows_iter.enumerate(){
-				if window[1].3 < window[0].3 + window[2].3 && window[0].2 >= window[1].1 && window[1].2 >= window[2].1 && !tokens_to_remove.contains(&i){
+				if window[1].3 <= window[0].3 + window[2].3 && window[0].2 >= window[1].1 && window[1].2 >= window[2].1 && !tokens_to_remove.contains(&i){
 					// println!("{} {}", i, tokens_to_remove.contains(&i));
 					tokens_to_remove.push(i+1);
 				}
@@ -243,6 +243,9 @@ impl Trie {
 					}
 					if window[1].3 >= window[2].3 && window[1].2 >= window[2].1 && !tokens_to_remove.contains(&(i+1)){
 						tokens_to_remove.push(i+2);
+					}
+					if window[1].3 < window[2].3 && window[1].2 >= window[2].1{
+						tokens_to_remove.push(i+1);
 					}
 				}
 			}
@@ -281,6 +284,7 @@ impl Trie {
 		// println!("{:?}", to_add);
 		candidates.append(&mut to_add);
 		candidates.sort_by_key(|a| a.1);
+		// println!("candidates: {:?}", candidates);
 		let mut result: Vec<Token> = Vec::new();
 
 		for candidate in candidates{
@@ -314,17 +318,18 @@ impl Trie {
 				// continue;
 			// }
 		// }
-		match self.search(&candidate.0){
+		let string = candidate.0.trim().to_string();
+		match self.search(&string){
 			Some(val)=> {
 					if val >= 4000000000 {
-						return vec![Token{value: candidate.0, synonyms: self.synonym_dict[val as usize -4000000000].clone()}];
+						return vec![Token{value: string, synonyms: self.synonym_dict[val as usize -4000000000].clone()}];
 					}
 					else{
-						return vec![Token{value: candidate.0, synonyms: Vec::new()}];
+						return vec![Token{value: string, synonyms: Vec::new()}];
 					}
 				}
 			None => {
-				let splits: Vec<Token> = candidate.0.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: Vec::new()}).collect();
+				let splits: Vec<Token> = string.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: Vec::new()}).collect();
 				return splits;
 			}
 		}
