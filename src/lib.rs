@@ -21,13 +21,13 @@ pub struct Trie {
 }
 fn char_2_index(c: u8) -> usize{ // map characters of input string to an usize in range 0..37
 	let index: usize = match c{
-		0..=31 => panic!("{} contains non alphanumeric characters", c as char),
+		0..=31 => panic!("{} is a non lowercase alphanumeric characters", c as char),
 		32 => 0,
-		33..=47 => panic!("{} contains non alphanumeric characters", c as char),
+		33..=47 => panic!("{} is a non lowercase alphanumeric characters", c as char),
 		48..=57 => c as usize - 47,
-		58..=96 => panic!("{} contains non alphanumeric characters", c as char),
+		58..=96 => panic!("{} is a non lowercase alphanumeric characters", c as char),
 		97..=122 => c as usize - 86,
-		123..=255 => panic!("{} contains non alphanumeric characters", c as char),
+		123..=255 => panic!("{} is a non lowercase alphanumeric characters", c as char),
 	};
 	return index;
 }
@@ -225,22 +225,23 @@ impl Trie {
 			}
 		}
 		if candidates.len()>=3{
+			// println!("candidates: {:?}", candidates);
 			let mut tokens_to_remove: Vec<usize> = Vec::new();
 			let windows_iter = candidates.windows(3);
 			
 			for (i, window) in windows_iter.enumerate(){
-				if window[1].3 < window[0].3 + window[2].3 && window[0].2 >= window[1].1 && window[1].2 >= window[2].1 {
+				if window[1].3 < window[0].3 + window[2].3 && window[0].2 >= window[1].1 && window[1].2 >= window[2].1 && !tokens_to_remove.contains(&i){
 					// println!("{} {}", i, tokens_to_remove.contains(&i));
 					tokens_to_remove.push(i+1);
 				}
 				else{
-					if window[0].3 >= window[1].3 && window[0].2 >= window[1].1{
+					if window[0].3 >= window[1].3 && window[0].2 >= window[1].1 && !tokens_to_remove.contains(&i){
 						tokens_to_remove.push(i+1);
 					}
 					if window[1].3 > window[0].3 && window[0].2 >= window[1].1{
 						tokens_to_remove.push(i);
 					}
-					if window[1].3 >= window[2].3 && window[1].2 >= window[2].1{
+					if window[1].3 >= window[2].3 && window[1].2 >= window[2].1 && !tokens_to_remove.contains(&(i+1)){
 						tokens_to_remove.push(i+2);
 					}
 				}
