@@ -106,29 +106,24 @@ impl Trie {
 		let mut value: Option<u32> = None;
 		let mut offset: usize = 0;
 		let mut last_whitespace = 0;
+		let mut whitespace_count = 0;
 		for i in 0..string.len(){
 			node_pos = self.transition(node_pos, &string.as_bytes()[i]);
 			if string.as_bytes()[i] == ' ' as u8{
 				last_whitespace = i;
+				whitespace_count = whitespace_count + 1;
 			}
-			// println!("{}, {:?}", node_pos, self.nodes[node_pos].val);
 			if node_pos != 4294967295 && i < string.len()-1{
-				// if self.nodes[node_pos].val != None{
-					// value = self.nodes[node_pos].val;
-				// }				
-
-				
 					if string.as_bytes()[i+1] == ' ' as u8{
 						value = self.nodes[node_pos].val;
 						offset = i;
 					}
-				
 			}
 			if i == string.len()-1 && node_pos != 4294967295 && (return_prefix ==  true || last_whitespace == 0){
 				return Some((self.nodes[node_pos].val.unwrap_or(1), i));
 			}
-			if i == string.len()-1 && node_pos != 4294967295 && return_prefix ==  false{
-				return Some((self.nodes[node_pos].val.unwrap_or(1), last_whitespace-1));
+			if node_pos != 4294967295 && i == string.len()-1 && (self.nodes[node_pos].val != None || whitespace_count == 1){
+				return Some((self.nodes[node_pos].val.unwrap_or(1), string.len()-1));
 			}
 			if node_pos == 4294967295 {
 				match value {
@@ -141,7 +136,7 @@ impl Trie {
 				}
 			}
 		}
-		return Some((value.unwrap_or(0), offset));
+		return Some((value.unwrap_or(1), offset));
 	}
 	//return set of common prefixes for input string
 	pub fn common_prefix_search(&self, string: &str) -> Vec<(u32, usize)> {
