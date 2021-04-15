@@ -100,8 +100,8 @@ impl Trie {
 		}
 		return self.nodes[node_pos].val;
 	}
-	
-	pub fn longest_common_prefix_search(&self, string: &str) -> Option<(u32, usize)>{ //returns longest key from the beginning of the input string, returns a prefix for a key in the trie if no complete key can be found
+	//returns longest key from the beginning of the input string, can be called to returns a prefix for a key in the trie if no complete key can be found
+	pub fn longest_common_prefix_search(&self, string: &str, return_prefix: bool) -> Option<(u32, usize)>{ 
 		let mut node_pos: usize = 0;
 		let mut value: Option<u32> = None;
 		let mut offset: usize = 0;
@@ -120,7 +120,7 @@ impl Trie {
 					}
 				
 			}
-			if i == string.len()-1 && node_pos != 4294967295{
+			if i == string.len()-1 && node_pos != 4294967295 && return_prefix ==  true{
 				return Some((self.nodes[node_pos].val.unwrap_or(1), i));
 			}
 			if node_pos == 4294967295 {
@@ -188,7 +188,7 @@ impl Trie {
 	}
 	
 	/// function that gets the highest scoring (sum of values) combination of tokens
-	pub fn get_all_tokens(&self, input: &str)-> Vec<Token>{
+	pub fn get_all_tokens(&self, input: &str, return_prefix: bool)-> Vec<Token>{
 		if !input.contains(' '){return vec![Token {value: input.to_string(), synonyms: match self.search(input){
 			None => Vec::new(),
 			Some(val) => {
@@ -206,7 +206,7 @@ impl Trie {
 		offsets.push(0);
 		offsets.rotate_right(1);
 		for offset in offsets{
-			let word  = self.longest_common_prefix_search(&input[offset..]).unwrap_or((0, 0));
+			let word  = self.longest_common_prefix_search(&input[offset..], return_prefix).unwrap_or((0, 0));
 			let candidate = (input[offset..=offset+word.1].to_string(), offset, offset+word.1,word.0);
 			if candidate.2 > candidates.last().unwrap_or(&("".to_string(), 0, 0, 0)).2 && word.1!=0{
 				candidates.push(candidate);
