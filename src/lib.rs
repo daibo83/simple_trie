@@ -105,8 +105,12 @@ impl Trie {
 		let mut node_pos: usize = 0;
 		let mut value: Option<u32> = None;
 		let mut offset: usize = 0;
+		let mut last_whitespace = 0;
 		for i in 0..string.len(){
 			node_pos = self.transition(node_pos, &string.as_bytes()[i]);
+			if string.as_bytes()[i] == ' ' as u8{
+				last_whitespace = i;
+			}
 			// println!("{}, {:?}", node_pos, self.nodes[node_pos].val);
 			if node_pos != 4294967295 && i < string.len()-1{
 				// if self.nodes[node_pos].val != None{
@@ -120,8 +124,11 @@ impl Trie {
 					}
 				
 			}
-			if i == string.len()-1 && node_pos != 4294967295 && return_prefix ==  true{
+			if i == string.len()-1 && node_pos != 4294967295 && (return_prefix ==  true || last_whitespace == 0){
 				return Some((self.nodes[node_pos].val.unwrap_or(1), i));
+			}
+			if i == string.len()-1 && node_pos != 4294967295 && return_prefix ==  false{
+				return Some((self.nodes[node_pos].val.unwrap_or(1), last_whitespace-1));
 			}
 			if node_pos == 4294967295 {
 				match value {
