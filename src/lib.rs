@@ -1,3 +1,10 @@
+use std::{
+    fs::File,
+    io::{prelude::*, BufReader,stdin,stdout,Write
+	},
+	path::Path,
+};
+
 #[derive(Debug, Clone)]
 pub struct Token{
 	pub value: String,
@@ -32,6 +39,13 @@ fn char_2_index(c: u8) -> usize{ // map characters of input string to an usize i
 	return index;
 }
 
+fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
+    let file = File::open(filename).expect("no such file");
+    let buf = BufReader::new(file);
+    buf.lines()
+        .map(|l| l.expect("Could not parse line"))
+        .collect()
+}
 
 
 impl Trie {
@@ -146,6 +160,33 @@ impl Trie {
 		}
 		return results;
 	}
+	
+	pub fn insert_segmentation_dict(&mut self, filename: impl AsRef<Path>){
+		let lines = lines_from_file(filename);
+		let mut key = "".to_string();
+		let mut value: u32 = 0;
+		for line in lines{
+			let tag = line.clone();
+			let key_temp: String = tag.split('\t').next().unwrap().to_string().chars().filter(|c| c.is_alphanumeric() || c.is_whitespace()).collect();
+			key = key_temp.to_lowercase();
+			let space_index = key.find(' ').unwrap();
+			key.remove(space_index);
+			self.insert(&key, Some(space_index as u32));
+		}
+	}
+	
+	//function that inserts whitespace for tokens that omit them, best used with bigram dictionaries
+	pub fn word_segmentation(&self, string: &str) -> Option<Token>{
+		match self.search(string){
+			None => {return None},
+			Some(val) => {
+				let mut result = string.to_string();
+				result.insert(val as usize, ' ');
+				return Some(Token{value: string.to_string(), synonyms: vec![result]});
+			}
+		}	
+	}
+	
 	/// function that gets the highest scoring (sum of values) combination of tokens
 	pub fn get_all_tokens(&self, input: &str)-> Vec<Token>{
 		if !input.contains(' '){return vec![Token {value: input.to_string(), synonyms: match self.search(input){
