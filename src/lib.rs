@@ -167,13 +167,17 @@ impl Trie {
 		let lines = lines_from_file(filename);
 		let mut key = "".to_string();
 		let mut value: u32 = 0;
-		for line in lines{
+        for line in lines{
 			let tag = line.clone();
 			let key_temp: String = tag.split('\t').next().unwrap().to_string().chars().filter(|c| c.is_alphanumeric() || c.is_whitespace()).collect();
 			key = key_temp.to_lowercase();
-			let space_index = key.find(' ').unwrap();
-			key.remove(space_index);
-			self.insert(&key, Some(space_index as u32));
+			match key.find(' ') {
+				Some(space_index) => {
+					key.remove(space_index);
+					self.insert(&key, Some(space_index as u32));
+				}
+				None => (),
+			}
 		}
 	}
 	
