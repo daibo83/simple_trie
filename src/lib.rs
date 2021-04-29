@@ -6,9 +6,10 @@ use std::{
 };
 
 #[derive(Debug, Clone)]
-pub struct Token{
+pub struct Token{// insert words with value 4294967294(u32::MAX -1) to classify as stopwords
 	pub value: String,
-	pub synonyms: Vec<String>
+	pub synonyms: Vec<String>,
+	pub is_stopword: bool
 }
 
 pub struct Node {
@@ -188,7 +189,7 @@ impl Trie {
 			Some(val) => {
 				let mut result = string.to_string();
 				result.insert(val as usize, ' ');
-				return Some(Token{value: string.to_string(), synonyms: vec![result]});
+				return Some(Token{value: string.to_string(), synonyms: vec![result], is_stopword: false});
 			}
 		}	
 	}
@@ -198,12 +199,12 @@ impl Trie {
 		if !input.contains(' '){return vec![Token {value: input.to_string(), synonyms: match self.search(input){
 			None => Vec::new(),
 			Some(val) => {
-				if val >= 4000000000{
+				if val >= 4000000000 && val < u32::MAX -1{
 					self.synonym_dict[val as usize - 4000000000].clone()
 				}
 				else{Vec::new()}
 			}
-		}
+		}, is_stopword: false
 		}
 		]}
 		let mut candidates: Vec<(String, usize, usize, u32)> = Vec::new();
@@ -249,12 +250,16 @@ impl Trie {
 					result.append(&mut splits);
 				}
 				else{
-					if candidate.3 >= 4000000000{
-						
-						result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone()})
+					if candidate.3 >= 4000000000 && candidate.3 != u32::MAX -1{						
+						result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone(), is_stopword: false})
 					}
 					else{
-						result.push(Token{value: candidate.0, synonyms: Vec::new()});
+						if candidate.3 == 4294967294{
+							result.push(Token{value: candidate.0, synonyms: Vec::new(), is_stopword: true})
+						}
+						else{
+							result.push(Token{value: candidate.0, synonyms: Vec::new(), is_stopword: false});
+						}
 					}
 				}
 			}
@@ -340,12 +345,16 @@ impl Trie {
 				result.append(&mut splits);
 			}
 			else{
-				if candidate.3 >= 4000000000{
-					
-					result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone()})
-				}
+				if candidate.3 >= 4000000000 && candidate.3 != u32::MAX -1{					
+					result.push(Token{value: candidate.0, synonyms: self.synonym_dict[candidate.3 as usize -4000000000].clone(), is_stopword: false})
+				}				
 				else{
-					result.push(Token{value: candidate.0, synonyms: Vec::new()});
+					if candidate.3 == 4294967294{
+						result.push(Token{value: candidate.0, synonyms: Vec::new(), is_stopword: true})
+					}
+					else{
+						result.push(Token{value: candidate.0, synonyms: Vec::new(), is_stopword: false});
+					}
 				}
 			}
 		}
@@ -368,15 +377,20 @@ impl Trie {
 		let string = candidate.0.trim().to_string();
 		match self.search(&string){
 			Some(val)=> {
-					if val >= 4000000000 {
-						return vec![Token{value: string, synonyms: self.synonym_dict[val as usize -4000000000].clone()}];
-					}
+					if val >= 4000000000 && val != u32::MAX -1{
+						return vec![Token{value: string, synonyms: self.synonym_dict[val as usize -4000000000].clone(), is_stopword: false}];
+					}					
 					else{
-						return vec![Token{value: string, synonyms: Vec::new()}];
+						if val == 4294967294{
+							return vec![(Token{value: string, synonyms: Vec::new(), is_stopword: true})];
+						}
+						else{
+							return vec![Token{value: string, synonyms: Vec::new(), is_stopword: false}];
+						}
 					}
 				}
 			None => {
-				let splits: Vec<Token> = string.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: Vec::new()}).collect();
+				let splits: Vec<Token> = string.split_whitespace().map(|s| Token{value: s.to_owned(), synonyms: Vec::new(), is_stopword: false}).collect();
 				return splits;
 			}
 		}
